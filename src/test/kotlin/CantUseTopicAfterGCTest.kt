@@ -2,10 +2,7 @@ import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.hasElement
 import org.apache.pulsar.client.admin.PulsarAdmin
 import org.apache.pulsar.client.admin.PulsarAdminException
-import org.apache.pulsar.client.api.PulsarClient
-import org.apache.pulsar.client.api.Schema
-import org.apache.pulsar.client.api.SubscriptionInitialPosition
-import org.apache.pulsar.client.api.SubscriptionType
+import org.apache.pulsar.client.api.*
 import org.apache.pulsar.common.policies.data.Policies
 import org.apache.pulsar.common.policies.data.TenantInfoImpl
 import org.awaitility.Awaitility.await
@@ -56,20 +53,8 @@ class CantUseTopicAfterGCTest {
             assertTopicNotThere(topic)
         }
         println("GC'd")
-    }
-
-    private fun sendAndConsumeSomeMessages(topic: String) {
-        pulsarClient
-            .newConsumer(Schema.STRING)
-            .topic(topic)
-            .subscriptionType(SubscriptionType.Exclusive)
-            .subscriptionInitialPosition(SubscriptionInitialPosition.Earliest)
-            .subscriptionName("test-sub")
-            .subscribe().use { consumer ->
-                sendSomeMessages(topic)
-                val message = consumer.receive(10, TimeUnit.SECONDS)
-                assertNotNull(message, "never received a message")
-            }
+        Thread.sleep(5000L)
+        println("Slept a bit")
     }
 
     private fun sendSomeMessages(topic: String) {
@@ -82,6 +67,21 @@ class CantUseTopicAfterGCTest {
                     println("Sending message: $message")
                     producer.newMessage().value(message).send()
                 }
+            }
+    }
+
+    private fun sendAndConsumeSomeMessages(topic: String) {
+        pulsarClient
+            .newConsumer(Schema.STRING)
+            .topic(topic)
+            .subscriptionType(SubscriptionType.Shared   )
+            .subscriptionInitialPosition(SubscriptionInitialPosition.Earliest)
+            .subscriptionMode(SubscriptionMode.Durable)
+            .subscriptionName("test-sub")
+            .subscribe().use { consumer ->
+                sendSomeMessages(topic)
+                val message = consumer.receive(10, TimeUnit.SECONDS)
+                assertNotNull(message, "never received a message")
             }
     }
 

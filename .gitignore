@@ -1,3 +1,14 @@
 /build/
 /.idea/
 /.gradle/
+/docker/bookie1/
+/docker/bookie2/
+/docker/bookie3/
+/docker/broker1/
+/docker/broker2/
+/docker/conf/
+/docker/proxy/
+/docker/scripts/
+/docker/zoo1/
+/docker/zoo2/
+/docker/zoo3/
